@@ -1,0 +1,47 @@
+analysis:
+- aaa
+
+system:
+/ad li a7, 221
+s 0x00021650
+pd 1
+sf.
+afn execve
+pd 1
+axt
+s 0x1539a
+pd 13
+s 0x000153a2
+afn system
+pd 1
+
+binsh string:
+/ /bin/sh
+psz @ 0x0004ddc0
+
+a0 gadget:
+"/ad/ *; *; *; ret" | grep 'ld a0' | cut -d',' -f2 | sort -nr | uniq | grep sp
+"/ad/ ld a0, 24(sp)*;*;*;ret"
+f-hit*
+pd 1 @ 0x0004a9d2
+pd 4 @ 0x0004a9cc
+
+
+install riscv vm:
+
+sudo docker run -itp 1234:10000 debian
+apt install qemu-system-riscv64 wget xzdec
+wget https://fedorapeople.org/groups/risc-v/disk-images/stage4-disk.img.xz
+xzdec -d stage4-disk.img.xz > stage4-disk.img
+qemu-system-riscv64 \
+   -nographic \
+   -machine virt \
+   -smp 4 \
+   -m 2G \
+   -object rng-random,filename=/dev/urandom,id=rng0 \
+   -device virtio-rng-device,rng=rng0 \
+   -device virtio-blk-device,drive=hd0 \
+   -drive file=stage4-disk.img,format=raw,id=hd0 \
+   -device virtio-net-device,netdev=usernet \
+   -netdev user,id=usernet,hostfwd=tcp::10000-:22
+
